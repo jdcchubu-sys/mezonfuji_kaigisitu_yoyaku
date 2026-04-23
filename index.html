@@ -163,7 +163,7 @@ function renderGrid(){
   dates.forEach(function(date){
     var sun=date.getDay()===0,sat=date.getDay()===6,tod=isToday(date);
     var col=tod?'#fff':sun?'#e53935':sat?'#1565C0':'#444';
-    html+='<div class="date-cell"><div class="date-pill" style="background:'+(tod?'#1565C0':'transparent')+';color:'+col+'"><span class="num">'+date.getDate()+'</span><span class="day">'+DAY_JP[date.getDay()]+'</span></div></div>';
+    html+='<div class="date-cell"><div class="date-pill" style="background:'+(tod?'#1565C0':'transparent')+';color:'+col+'"><span class="num">'+(date.getMonth()+1)+'/'+date.getDate()+'</span><span class="day">'+DAY_JP[date.getDay()]+'</span></div></div>';
   });
   html+='</div>';
   SLOTS.forEach(function(slot){
