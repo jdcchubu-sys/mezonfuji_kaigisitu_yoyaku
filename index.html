@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="会議室予約">
+<title>メゾン富士 会議室予約</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;background:#F0F2F8;min-height:100vh;overscroll-behavior:none;}
+#header{background:linear-gradient(135deg,#1a237e 0%,#283593 60%,#3949ab 100%);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#header .sub{font-size:10px;opacity:.7;letter-spacing:2px;margin-bottom:2px;}
+#header .title{font-size:17px;font-weight:700;}
+#main{max-width:700px;margin:0 auto;padding:10px 8px 40px;}
+.tabs{display:flex;background:#fff;border-radius:10px;padding:3px;margin-bottom:10px;gap:3px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.tab{flex:1;padding:9px 4px;border-radius:8px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#888;transition:all .15s;font-family:inherit;}
+.tab.active{background:#1a237e;color:#fff;box-shadow:0 2px 6px rgba(26,35,126,.3);}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px;}
+.nav-btn{flex:1;max-width:90px;padding:9px 0;border-radius:8px;border:1px solid #c5cae9;background:#fff;cursor:pointer;font-size:12px;color:#3949ab;font-weight:700;font-family:inherit;}
+.nav-today{max-width:72px;background:#e8eaf6;}
+.grid-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:8px;}
+.grid-row{display:flex;border-bottom:1px solid #f0f0f0;}
+.grid-row:last-child{border-bottom:none;}
+.slot-label{width:40px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fafafa;border-right:1px solid #eee;padding:4px 0;gap:1px;}
+.slot-label .emoji{font-size:13px;}
+.slot-label .name{font-size:10px;font-weight:700;}
+.date-header{width:40px;flex-shrink:0;background:#fafafa;}
+.date-cell{flex:1;text-align:center;padding:5px 1px;}
+.date-pill{display:inline-flex;flex-direction:column;align-items:center;border-radius:6px;padding:3px 5px;min-width:28px;}
+.date-pill .num{font-size:12px;font-weight:700;line-height:1.2;}
+.date-pill .day{font-size:9px;line-height:1;}
+.cell-wrap{flex:1;padding:2px 1.5px;}
+.cell{border-radius:6px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:54px;text-align:center;cursor:pointer;user-select:none;transition:opacity .1s;}
+.cell:active{opacity:.7;}
+.cell.past{cursor:default;}
+.cell.past:active{opacity:1;}
+.cell-icon{font-size:14px;line-height:1;}
+.cell-label{font-size:9px;font-weight:600;margin-top:2px;}
+.cell-room{font-size:8px;font-weight:700;margin-top:1px;}
+.cell-name{font-size:7.5px;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:6px 4px;font-size:11px;color:#666;}
+.legend span{display:flex;align-items:center;gap:4px;}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0;}
+.list-count{padding:4px 6px 6px;font-size:13px;color:#888;}
+.list-empty{text-align:center;padding:40px;color:#aaa;font-size:14px;}
+.list-card{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;margin:0 0 7px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.list-card .emoji{font-size:22px;flex-shrink:0;}
+.list-info{flex:1;min-width:0;}
+.list-info .ldate{font-size:13px;font-weight:700;color:#1a237e;}
+.list-info .ltime{font-size:11px;color:#888;}
+.list-info .lwho{font-size:12px;color:#444;margin-top:2px;}
+.cancel-btn{padding:7px 12px;border-radius:8px;border:1px solid #ef9a9a;background:#ffebee;color:#c62828;cursor:pointer;font-size:12px;font-weight:700;flex-shrink:0;font-family:inherit;}
+.info-box{margin-top:10px;padding:10px 14px;background:#fff;border-radius:10px;border:1px solid #e8eaf6;font-size:11px;color:#888;line-height:1.8;}
+#loading-screen{position:fixed;inset:0;background:#1a237e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+#loading-screen .l-icon{font-size:48px;margin-bottom:16px;}
+#loading-screen .l-text{font-size:16px;color:#fff;font-weight:700;}
+#loading-screen .l-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px;}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:1000;}
+#overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;box-shadow:0 -4px 24px rgba(0,0,0,.2);}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:#888;margin-bottom:18px;line-height:1.5;}
+.form-label{font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px;margin-top:12px;}
+.req-badge{font-size:10px;background:#e53935;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;}
+.form-select,.form-input{width:100%;padding:12px 10px;border-radius:8px;border:1.5px solid #c5cae9;font-size:15px;outline:none;background:#fff;font-family:inherit;}
+.form-err{font-size:12px;color:#e53935;margin-top:6px;}
+.cancel-detail{font-size:13px;color:#555;background:#fff8e1;border-radius:8px;padding:12px 14px;margin-bottom:18px;line-height:2;}
+.btn-row{display:flex;gap:10px;margin-top:18px;}
+.btn{flex:1;padding:13px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;}
+.btn-gray{background:#f5f5f5;color:#666;border:1px solid #ccc;}
+.btn-blue{background:linear-gradient(135deg,#1a237e,#3949ab);color:#fff;flex:2;}
+.btn-red{background:linear-gradient(135deg,#b71c1c,#e53935);color:#fff;flex:2;}
+.btn:disabled{background:#bbb;cursor:default;}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);color:#fff;padding:12px 22px;border-radius:24px;font-size:13px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:2000;white-space:nowrap;pointer-events:none;display:none;}
+#err-banner{background:#b71c1c;color:#fff;padding:10px 16px;font-size:12px;text-align:center;display:none;position:sticky;top:52px;z-index:99;}
+</style>
+</head>
+<body>
+<div id="loading-screen">
+  <div class="l-icon">🏢</div>
+  <div class="l-text">メゾン富士 会議室予約</div>
+  <div class="l-sub">読み込み中…</div>
+</div>
+<div id="err-banner">⚠️ <span id="err-msg"></span></div>
+<div id="header">
+  <div class="sub">MAISON FUJI</div>
+  <div class="title">🏢 1階会議室 予約システム</div>
+</div>
+<div id="main">
+  <div class="tabs">
+    <button class="tab active" onclick="switchView('week')">📅 カレンダー</button>
+    <button class="tab" onclick="switchView('list')">📋 予約一覧</button>
+  </div>
+  <div id="view-week">
+    <div class="nav">
+      <button class="nav-btn" onclick="shiftWeek(-1)">◀ 前週</button>
+      <button class="nav-btn nav-today" onclick="goToday()">今週</button>
+      <button class="nav-btn" onclick="shiftWeek(1)">次週 ▶</button>
+    </div>
+    <div class="grid-wrap" id="grid"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#4CAF50"></span>○ 空き（タップで予約）</span>
+      <span><span class="dot" style="background:#e53935"></span>✕ 予約済（タップで取消）</span>
+      <span><span class="dot" style="background:#bbb"></span>－ 終了済み</span>
+    </div>
+  </div>
+  <div id="view-list" style="display:none">
+    <div class="list-count" id="list-count">今後の予約 0件</div>
+    <div id="list-body"></div>
+  </div>
+  <div class="info-box">
+    ℹ️ <strong>ご利用案内</strong>　対象：メゾン富士 201〜601号室の区分所有者
+  </div>
+</div>
+<div id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-inner"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzBMGSR-ajVQPjpM_tKlQwlkHfd_g4vU0OPP0DfKKxXyWmGKGwg3fCDaqfa9MN765h2hw/exec';
+var ROOMS=['201','202','203','204','205','301','302','303','304','305','401','402','403','404','405','501','502','503','504','505','601'];
+var SLOTS=[
+  {id:'morning',   label:'朝',  time:'06:00〜12:00',emoji:'🌅',color:'#fff8e1',border:'#ffe082',active:'#F57F17'},
+  {id:'afternoon', label:'午後',time:'12:00〜18:00',emoji:'☀️',color:'#e3f2fd',border:'#90caf9',active:'#1565C0'},
+  {id:'evening',   label:'夜',  time:'18:00〜22:00',emoji:'🌙',color:'#ede7f6',border:'#ce93d8',active:'#4527A0'}
+];
+var DAY_JP=['日','月','火','水','木','金','土'];
+var reservations={}, weekBase=new Date(), cbCounter=0;
+
+function fmt(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function isToday(d){return fmt(d)===fmt(new Date());}
+function isPast(d,s){var h=s==='morning'?12:s==='afternoon'?18:22;return new Date()>new Date(fmt(d)+'T'+pad(h)+':00');}
+function getWeekDates(b){var d=new Date(b),day=d.getDay(),m=new Date(d);m.setDate(d.getDate()-(day===0?6:day-1));return Array.from({length:7},function(_,i){var x=new Date(m);x.setDate(m.getDate()+i);return x;});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function jsonp(params,onOk,onErr){
+  var cb='_cb'+(++cbCounter)+'_'+Date.now();
+  var t=setTimeout(function(){cleanup();onErr('タイムアウト');},20000);
+  function cleanup(){try{delete window[cb];}catch(e){}var el=document.getElementById(cb);if(el)el.parentNode.removeChild(el);clearTimeout(t);}
+  window[cb]=function(res){cleanup();if(res&&res.ok){onOk(res);}else{onErr((res&&res.error)||'エラー');}};
+  var qs='callback='+cb;
+  Object.keys(params).forEach(function(k){qs+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k]);});
+  var s=document.createElement('script');
+  s.id=cb;s.src=GAS_URL+'?'+qs;
+  s.onerror=function(){cleanup();onErr('接続エラー');};
+  document.head.appendChild(s);
+}
+
+function loadReservations(cb){
+  jsonp({action:'getReservations'},
+    function(res){reservations=res.data||{};hideLoading();if(cb)cb();},
+    function(err){showErr('取得エラー:'+err);hideLoading();if(cb)cb();}
+  );
+}
+
+function renderGrid(){
+  var dates=getWeekDates(weekBase),html='';
+  html+='<div class="grid-row"><div class="date-header"></div>';
+  dates.forEach(function(date){
+    var sun=date.getDay()===0,sat=date.getDay()===6,tod=isToday(date);
+    var col=tod?'#fff':sun?'#e53935':sat?'#1565C0':'#444';
+    html+='<div class="date-cell"><div class="date-pill" style="background:'+(tod?'#1565C0':'transparent')+';color:'+col+'"><span class="num">'+date.getDate()+'</span><span class="day">'+DAY_JP[date.getDay()]+'</span></div></div>';
+  });
+  html+='</div>';
+  SLOTS.forEach(function(slot){
+    html+='<div class="grid-row"><div class="slot-label"><span class="emoji">'+slot.emoji+'</span><span class="name" style="color:'+slot.active+'">'+slot.label+'</span></div>';
+    dates.forEach(function(date){
+      var key=fmt(date)+'_'+slot.id,res=reservations[key],past=isPast(date,slot.id);
+      html+='<div class="cell-wrap">';
+      if(res){
+        var bg=past?'#f5f5f5':'#ffebee',bdr=past?'#ddd':'#e53935',ic=past?'#ccc':'#e53935',rm=past?'#bbb':'#c62828',nm=past?'#ccc':'#b71c1c';
+        var clk=past?'':'onclick="openCancel(\''+key+'\',\''+date.toISOString()+'\')"';
+        html+='<div class="cell'+(past?' past':'')+'" style="background:'+bg+';border:1.5px solid '+bdr+'" '+clk+'><span class="cell-icon" style="color:'+ic+'">✕</span><span class="cell-room" style="color:'+rm+'">'+res.room+'号</span><span class="cell-name" style="color:'+nm+'">'+esc(res.name)+'</span></div>';
+      }else{
+        var bg=past?'#f5f5f5':slot.color,bdr=past?'#ddd':slot.border,col=past?'#ccc':slot.active;
+        var clk=past?'':'onclick="openReserve(\''+key+'\',\''+date.toISOString()+'\')"';
+        html+='<div class="cell'+(past?' past':'')+'" style="background:'+bg+';border:1.5px solid '+bdr+'" '+clk+'><span class="cell-icon" style="color:'+col+'">'+(past?'－':'○')+'</span><span class="cell-label" style="color:'+col+'">'+(past?'終了':'空き')+'</span></div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('grid').innerHTML=html;
+}
+
+function renderList(){
+  var list=[];
+  Object.keys(reservations).forEach(function(k){
+    var p=k.split('_'),date=new Date(p[0]),sid=p[1],slot=SLOTS.find(function(s){return s.id===sid;});
+    if(slot&&!isPast(date,sid))list.push({key:k,date:date,slotId:sid,slot:slot,room:reservations[k].room,name:reservations[k].name});
+  });
+  list.sort(function(a,b){return fmt(a.date).localeCompare(fmt(b.date))||SLOTS.findIndex(function(s){return s.id===a.slotId;})-SLOTS.findIndex(function(s){return s.id===b.slotId;});});
+  document.getElementById('list-count').textContent='今後の予約 '+list.length+'件';
+  if(!list.length){document.getElementById('list-body').innerHTML='<div class="list-empty">予約はありません</div>';return;}
+  var html='';
+  list.forEach(function(r){
+    html+='<div class="list-card"><span class="emoji">'+r.slot.emoji+'</span><div class="list-info"><div class="ldate">'+(r.date.getMonth()+1)+'/'+r.date.getDate()+'（'+DAY_JP[r.date.getDay()]+'）　'+r.slot.label+'</div><div class="ltime">'+r.slot.time+'</div><div class="lwho">🏠 '+r.room+'号室　'+esc(r.name)+' 様</div></div><button class="cancel-btn" onclick="openCancel(\''+r.key+'\',\''+r.date.toISOString()+'\')">取消</button></div>';
+  });
+  document.getElementById('list-body').innerHTML=html;
+}
+
+function openReserve(key,dateISO){
+  var p=key.split('_'),date=new Date(dateISO),sid=p[1],slot=SLOTS.find(function(s){return s.id===sid;});
+  var opts=ROOMS.map(function(r){return '<option value="'+r+'">'+r+'号室</option>';}).join('');
+  document.getElementById('modal-inner').innerHTML=
+    '<div class="modal-title" style="color:#1a237e">📅 会議室を予約する</div>'+
+    '<div class="modal-sub">'+(date.getMonth()+1)+'/'+date.getDate()+'（'+DAY_JP[date.getDay()]+'）　'+slot.emoji+' '+slot.label+'（'+slot.time+'）</div>'+
+    '<label class="form-label">部屋番号 <span class="req-badge">必須</span></label>'+
+    '<select id="f-room" class="form-select"><option value="">選択してください</option>'+opts+'</select>'+
+    '<label class="form-label">氏名 <span class="req-badge">必須</span></label>'+
+    '<input id="f-name" class="form-input" placeholder="例：田中 太郎" maxlength="30">'+
+    '<div id="f-err" class="form-err" style="display:none"></div>'+
+    '<div class="btn-row"><button class="btn btn-gray" onclick="closeModal()">キャンセル</button><button class="btn btn-blue" id="btn-ok" onclick="submitReserve(\''+key+'\')">予約する</button></div>';
+  showModal();
+}
+
+function submitReserve(key){
+  var room=document.getElementById('f-room').value,name=document.getElementById('f-name').value.trim(),err=document.getElementById('f-err');
+  if(!room){err.textContent='⚠ 部屋番号を選択してください';err.style.display='block';return;}
+  if(!name){err.textContent='⚠ 氏名を入力してください';err.style.display='block';return;}
+  err.style.display='none';
+  var btn=document.getElementById('btn-ok');btn.disabled=true;btn.textContent='処理中…';
+  jsonp({action:'addReservation',key:key,room:room,name:name},
+    function(){reservations[key]={room:room,name:name};closeModal();renderGrid();renderList();showToast('✅ 予約が完了しました','#1a237e');},
+    function(e){err.textContent='⚠ '+e;err.style.display='block';btn.disabled=false;btn.textContent='予約する';}
+  );
+}
+
+function openCancel(key,dateISO){
+  var p=key.split('_'),date=new Date(dateISO),sid=p[1],slot=SLOTS.find(function(s){return s.id===sid;}),res=reservations[key];
+  if(!res)return;
+  document.getElementById('modal-inner').innerHTML=
+    '<div class="modal-title" style="color:#b71c1c">🗑️ 予約を取り消しますか？</div>'+
+    '<div class="cancel-detail">📅 '+(date.getMonth()+1)+'/'+date.getDate()+'（'+DAY_JP[date.getDay()]+'）<br>⏰ '+slot.label+'（'+slot.time+'）<br>🏠 '+res.room+'号室　'+esc(res.name)+' 様</div>'+
+    '<div class="btn-row"><button class="btn btn-gray" onclick="closeModal()">戻る</button><button class="btn btn-red" id="btn-ok" onclick="submitCancel(\''+key+'\')">取り消す</button></div>';
+  showModal();
+}
+
+function submitCancel(key){
+  var btn=document.getElementById('btn-ok');btn.disabled=true;btn.textContent='処理中…';
+  jsonp({action:'cancelReservation',key:key},
+    function(){delete reservations[key];closeModal();renderGrid();renderList();showToast('🗑️ 予約を取り消しました','#b71c1c');},
+    function(e){showErr('取消エラー:'+e);btn.disabled=false;btn.textContent='取り消す';}
+  );
+}
+
+function shiftWeek(n){weekBase.setDate(weekBase.getDate()+n*7);renderGrid();}
+function goToday(){weekBase=new Date();renderGrid();}
+function switchView(v){
+  document.getElementById('view-week').style.display=v==='week'?'block':'none';
+  document.getElementById('view-list').style.display=v==='list'?'block':'none';
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',(i===0&&v==='week')||(i===1&&v==='list'));});
+  if(v==='list')renderList();
+}
+function showModal(){document.getElementById('overlay').classList.add('show');}
+function closeModal(){document.getElementById('overlay').classList.remove('show');}
+function showToast(msg,bg){var el=document.getElementById('toast');el.textContent=msg;el.style.background=bg||'#1a237e';el.style.display='block';setTimeout(function(){el.style.display='none';},2800);}
+function showErr(msg){var el=document.getElementById('err-banner');document.getElementById('err-msg').textContent=msg;el.style.display='block';setTimeout(function(){el.style.display='none';},6000);}
+function hideLoading(){var el=document.getElementById('loading-screen');el.style.opacity='0';setTimeout(function(){el.style.display='none';},400);}
+
+window.addEventListener('load',function(){ loadReservations(function(){ renderGrid(); }); });
+</script>
+</body>
+</html>
