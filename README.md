@@ -1,0 +1,1 @@
+# mezonfuji_kaigisitu_yoyaku
