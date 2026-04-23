@@ -131,7 +131,7 @@ body{font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;backgroun
 // ============================================================
 // ★★ GASウェブアプリURLをここに貼り付けてください ★★
 // ============================================================
-var GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbx-reCqNwu9HhMfEwwnI2Wa6A-Y5qxJcdJZcl7o6UJjqexmuB8AKhxABS95Xx6qzvLXlA/exec';
 
 var ROOMS = ['201','202','203','204','205','301','302','303','304','305',
              '401','402','403','404','405','501','502','503','504','505','601'];
@@ -325,7 +325,7 @@ function hideLoading(){var el=document.getElementById('loading-screen');el.style
 
 // ── 起動 ──
 window.addEventListener('load',function(){
-  if(GAS_URL==='YOUR_GAS_WEB_APP_URL_HERE'){
+  if(GAS_URL==='https://script.google.com/macros/s/AKfycbx-reCqNwu9HhMfEwwnI2Wa6A-Y5qxJcdJZcl7o6UJjqexmuB8AKhxABS95Xx6qzvLXlA/exec'){
     showErr('GAS URLが未設定です');hideLoading();renderGrid();return;
   }
   loadReservations(function(){renderGrid();});
